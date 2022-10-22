@@ -60,6 +60,7 @@ linter:
   rules:
     avoid_print: false
     prefer_const_literals_to_create_immutables: false
+    prefer_const_constructors: false
 ''');
   }
 
@@ -139,6 +140,7 @@ linter:
     avoid_print: false
     use_key_in_widget_constructors: false
     prefer_const_literals_to_create_immutables: false
+    prefer_const_constructors: false
 ''');
   }
 
