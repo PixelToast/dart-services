@@ -6,6 +6,7 @@ import 'dart:convert' show jsonDecode;
 import 'dart:io';
 
 import 'package:path/path.dart' as path;
+
 import 'project.dart';
 import 'sdk.dart';
 import 'utils.dart';
@@ -58,6 +59,7 @@ include: package:lints/recommended.yaml
 linter:
   rules:
     avoid_print: false
+    prefer_const_literals_to_create_immutables: false
 ''');
   }
 
@@ -136,6 +138,7 @@ linter:
   rules:
     avoid_print: false
     use_key_in_widget_constructors: false
+    prefer_const_literals_to_create_immutables: false
 ''');
   }
 

@@ -85,6 +85,7 @@ Set<String> supportedFlutterPackages({required bool devMode}) => {
       'hooks_riverpod',
       'provider',
       'english_words',
+      'english_words',
       'firebase_analytics',
       'firebase_database',
       'firebase_messaging',
