@@ -131,6 +131,7 @@ Set<String> supportedFlutterPackages({required bool devMode}) => {
       'sliver_tools',
       'auto_route',
       'cupertino_icons',
+      'flutter_animate',
       if (devMode) ...[],
     };
 
