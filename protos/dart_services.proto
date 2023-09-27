@@ -75,6 +75,8 @@ message AnalysisIssue {
   string url = 8;
   repeated DiagnosticMessage diagnosticMessages = 9;
   string correction = 10;
+  int32 column = 11;
+  string code = 12;
 }
 
 message DiagnosticMessage {
@@ -206,11 +208,11 @@ message VersionResponse {
   // semver string, and have a space and other build details appended.
   string runtimeVersion = 3;
 
-  // The App Engine version.
-  string appEngineVersion = 4;
+  // Removed.
+  string appEngineVersion = 4 [deprecated = true];
 
-  // The dart-services backend version.
-  string servicesVersion = 5;
+  // Removed.
+  string servicesVersion = 5 [deprecated = true];
 
   // The Flutter SDK's version.
   string flutterVersion = 6;
@@ -233,6 +235,12 @@ message VersionResponse {
   //
   // Each package found in `pubspec.lock` is included.
   repeated PackageInfo packageInfo = 10;
+
+  // Experiments that this server is running
+  repeated string experiment = 11;
+
+  // The Flutter engine SHA, located in bin/internal/engine.version.
+  string flutterEngineSha = 12;
 
   // Make this response compatible with BadRequest
   ErrorMessage error = 99;

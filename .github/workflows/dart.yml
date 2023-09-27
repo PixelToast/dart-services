@@ -20,20 +20,14 @@ jobs:
       matrix:
         sdk: [stable, beta, dev, old, master]
     steps:
-      - uses: actions/checkout@v3
-      - uses: dart-lang/setup-dart@v1.3
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+      - uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
         with:
           sdk: stable
       - name: Install dependencies
         run: sudo apt-get install -y protobuf-compiler redis
       - name: Install dependencies
         run: dart pub get
-      - name: Analyze code (example/)
-        run: |
-          cd example
-          echo [Analyzing example]
-          dart pub get
-          dart analyze --fatal-infos .
       - name: Analyze code
         run: dart analyze --fatal-infos .
       - name: Prepare Flutter
@@ -47,3 +41,23 @@ jobs:
           export PATH=$PATH:$HOME/.pub-cache/bin
           dart pub global activate protoc_plugin
           ./tool/travis.sh ${{ matrix.sdk }}
+
+  # Run the benchmarks on the bots to ensure they don't regress.
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+      - uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
+      - run: sudo apt-get install -y protobuf-compiler redis
+      - run: dart pub get
+      - name: Download the Flutter SDK
+        run: |
+          dart run tool/update_sdk.dart stable
+          export PATH=$PATH:$PWD/flutter-sdks/stable/bin
+          flutter doctor -v
+      - name: Prep the repo
+        env:
+          FLUTTER_CHANNEL: stable
+        run: dart pub run grinder buildbot
+      - name: Run benchmarks
+        run: dart benchmark/bench.dart

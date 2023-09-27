@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library services.redis_cache_test;
-
 import 'dart:async';
 import 'dart:io';
 
@@ -149,7 +147,7 @@ void defineTests() {
         try {
           // Wait for a retry message.
           while (logMessages.length < 2) {
-            await (Future<void>.delayed(Duration(milliseconds: 50)));
+            await Future<void>.delayed(Duration(milliseconds: 50));
           }
           expect(
               logMessages.join('\n'),

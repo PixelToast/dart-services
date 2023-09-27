@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// A wrapper around an analysis server instance
-library services.analysis_server;
+library;
 
 import 'dart:async';
 import 'dart:convert';
@@ -299,7 +299,7 @@ abstract class AnalysisServerWrapper {
         .schedule(ClosureTask<proto.AnalysisResults>(() async {
       sources = _getOverlayMapWithPaths(sources);
       await _loadSources(sources);
-      final List<AnalysisError> errors = [];
+      final errors = <AnalysisError>[];
 
       // Loop over all files and collect errors (sources now has filenames
       // with full paths as keys after _getOverlayMapWithPaths() call).
@@ -313,19 +313,22 @@ abstract class AnalysisServerWrapper {
       final issues = errors.map((error) {
         final issue = proto.AnalysisIssue()
           ..kind = error.severity.toLowerCase()
+          ..code = error.code.toLowerCase()
           ..line = error.location.startLine
+          ..column = error.location.startColumn
           ..message = utils.normalizeFilePaths(error.message)
           ..sourceName = path.basename(error.location.file)
           ..hasFixes = error.hasFix ?? false
           ..charStart = error.location.offset
           ..charLength = error.location.length
-          ..diagnosticMessages.addAll(error.contextMessages?.map((m) =>
-                  proto.DiagnosticMessage(
-                      message: utils.normalizeFilePaths(m.message),
-                      line: m.location.startLine,
-                      charStart: m.location.offset,
-                      charLength: m.location.length)) ??
-              []);
+          ..diagnosticMessages.addAll(
+            error.contextMessages?.map((m) => proto.DiagnosticMessage()
+                  ..message = utils.normalizeFilePaths(m.message)
+                  ..line = m.location.startLine
+                  ..charStart = m.location.offset
+                  ..charLength = m.location.length) ??
+                [],
+          );
 
         if (error.url != null) {
           issue.url = error.url!;
@@ -482,7 +485,7 @@ abstract class AnalysisServerWrapper {
         .timeout(const Duration(seconds: 1))
         // At runtime, it appears that [ServerDomain.shutdown] returns a
         // `Future<Map<dynamic, dynamic>>`.
-        .catchError((_) => {});
+        .catchError((_) => <dynamic, dynamic>{});
   }
 
   /// Internal implementation of the completion mechanism.

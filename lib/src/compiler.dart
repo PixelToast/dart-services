@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// This library is a wrapper around the Dart to JavaScript (dart2js) compiler.
-library services.compiler;
+library;
 
 import 'dart:async';
 import 'dart:io';
@@ -67,7 +67,7 @@ class Compiler {
         sourcesFileList: files.keys.toList(), devMode: _sdk.devMode);
     if (unsupportedImports.isNotEmpty) {
       return CompilationResults(problems: [
-        for (var import in unsupportedImports)
+        for (final import in unsupportedImports)
           CompilationProblem._('unsupported import: ${import.uri.stringValue}'),
       ]);
     }
@@ -88,6 +88,8 @@ class Compiler {
         '--packages=${path.join('.dart_tool', 'package_config.json')}',
         '--sound-null-safety',
         '--enable-asserts',
+        if (_sdk.experiments.isNotEmpty)
+          '--enable-experiment=${_sdk.experiments.join(",")}',
         '-o',
         '$kMainDart.js',
         path.join('lib', kMainDart),
@@ -136,10 +138,11 @@ class Compiler {
     return compileFilesDDC({kMainDart: source});
   }
 
-  /// Compile the given set of source files and return the
-  /// resulting [DDCCompilationResults].
+  /// Compile the given set of source files and return the resulting
+  /// [DDCCompilationResults].
+  ///
   /// [files] is a map containing the source files in the format
-  ///   `{ "filename1":"sourcecode1" .. "filenameN":"sourcecodeN"}`
+  /// `{ "filename1":"sourcecode1" ... "filenameN":"sourcecodeN"}`.
   Future<DDCCompilationResults> compileFilesDDC(
       Map<String, String> files) async {
     if (files.isEmpty) {
@@ -152,7 +155,7 @@ class Compiler {
         sourcesFileList: files.keys.toList(), devMode: _sdk.devMode);
     if (unsupportedImports.isNotEmpty) {
       return DDCCompilationResults.failed([
-        for (var import in unsupportedImports)
+        for (final import in unsupportedImports)
           CompilationProblem._('unsupported import: ${import.uri.stringValue}'),
       ]);
     }
@@ -184,6 +187,7 @@ class Compiler {
 
       final arguments = <String>[
         '--modules=amd',
+        '--no-summarize',
         if (usingFlutter) ...[
           '-s',
           _projectTemplates.summaryFilePath,
@@ -194,6 +198,8 @@ class Compiler {
         ...['--module-name', 'dartpad_main'],
         '--enable-asserts',
         '--sound-null-safety',
+        if (_sdk.experiments.isNotEmpty)
+          '--enable-experiment=${_sdk.experiments.join(",")}',
         bootstrapPath,
         '--packages=${path.join(temp.path, '.dart_tool', 'package_config.json')}',
       ];

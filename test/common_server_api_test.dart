@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library services.common_server_api_test;
-
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
@@ -56,7 +54,7 @@ void defineTests() {
     request.headers.add('content-type', jsonContentType);
     request.add(utf8.encode(json.encode(jsonData)));
     await request.close();
-    await shelf_io.handleRequest(request, commonServerApi.router);
+    await shelf_io.handleRequest(request, commonServerApi.router.call);
     return request.response;
   }
 
@@ -67,18 +65,16 @@ void defineTests() {
     final request = MockHttpRequest('GET', uri);
     request.headers.add('content-type', jsonContentType);
     await request.close();
-    await shelf_io.handleRequest(request, commonServerApi.router);
+    await shelf_io.handleRequest(request, commonServerApi.router.call);
     return request.response;
   }
 
   group('CommonServerProto JSON', () {
-    final channel = Platform.environment['FLUTTER_CHANNEL'] ?? stableChannel;
-
+    final sdk =
+        Sdk.create(Platform.environment['FLUTTER_CHANNEL'] ?? stableChannel);
     setUp(() async {
-      final container = MockContainer();
       final cache = MockCache();
-      final sdk = Sdk.create(channel);
-      commonServerImpl = CommonServerImpl(container, cache, sdk);
+      commonServerImpl = CommonServerImpl(cache, sdk);
       commonServerApi = CommonServerApi(commonServerImpl);
       await commonServerImpl.init();
 
@@ -153,9 +149,7 @@ void main() {
         final data = await response.transform(utf8.decoder).join();
         expect(json.decode(data), <dynamic, dynamic>{});
       }
-    },
-        // TODO(srawlins): delete when channel `old` >= 2.15
-        skip: channel == 'old');
+    });
 
     test('analyze counterApp', () async {
       for (final version in versions) {
@@ -205,6 +199,8 @@ void main() {
                 'hasFixes': true,
                 'charStart': 29,
                 'charLength': 1,
+                'column': 16,
+                'code': 'expected_token',
               }
             ]
           },
@@ -509,7 +505,11 @@ main() {
         final encoded = await response.transform(utf8.decoder).join();
         final data = json.decode(encoded) as Map<String, dynamic>;
         final assists = data['assists'] as List<dynamic>;
-        expect(assists, hasLength(2));
+        if (sdk.masterChannel || sdk.betaChannel) {
+          expect(assists, hasLength(3));
+        } else {
+          expect(assists, hasLength(2));
+        }
         final firstEdit = assists.first as Map<String, dynamic>;
         expect(firstEdit['edits'], isNotNull);
         expect(firstEdit['edits'], hasLength(1));
@@ -535,13 +535,11 @@ main() {
   //-------------------------------------------------------------------------
   // Beginning of multi file files={} tests group:
   group('CommonServerProto JSON for Multi file group files={}', () {
-    final channel = Platform.environment['FLUTTER_CHANNEL'] ?? stableChannel;
-
+    final sdk =
+        Sdk.create(Platform.environment['FLUTTER_CHANNEL'] ?? stableChannel);
     setUp(() async {
-      final container = MockContainer();
       final cache = MockCache();
-      final sdk = Sdk.create(channel);
-      commonServerImpl = CommonServerImpl(container, cache, sdk);
+      commonServerImpl = CommonServerImpl(cache, sdk);
       commonServerApi = CommonServerApi(commonServerImpl);
       await commonServerImpl.init();
 
@@ -623,9 +621,7 @@ void main() {
         final data = await response.transform(utf8.decoder).join();
         expect(json.decode(data), <dynamic, dynamic>{});
       }
-    },
-        // TODO(srawlins): delete when channel `old` >= 2.15
-        skip: channel == 'old');
+    });
 
     test('analyzeFiles counterApp files={}', () async {
       for (final version in versions) {
@@ -681,6 +677,8 @@ void main() {
                 'hasFixes': true,
                 'charStart': 29,
                 'charLength': 1,
+                'column': 16,
+                'code': 'expected_token',
               }
             ]
           },
@@ -1219,7 +1217,11 @@ main() {
         final encoded = await response.transform(utf8.decoder).join();
         final data = json.decode(encoded) as Map<String, dynamic>;
         final assists = data['assists'] as List<dynamic>;
-        expect(assists, hasLength(2));
+        if (sdk.masterChannel || sdk.betaChannel) {
+          expect(assists, hasLength(3));
+        } else {
+          expect(assists, hasLength(2));
+        }
         final firstEdit = assists.first as Map<String, dynamic>;
         expect(firstEdit['edits'], isNotNull);
         expect(firstEdit['edits'], hasLength(1));
@@ -1232,11 +1234,6 @@ main() {
   });
   // End of multi file files={} tests group.
   //-------------------------------------------------------------------------
-}
-
-class MockContainer implements ServerContainer {
-  @override
-  String get version => vmVersion;
 }
 
 class MockCache implements ServerCache {

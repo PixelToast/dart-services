@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library services.common_server_api;
-
 import 'dart:async';
 import 'dart:convert';
 
@@ -11,10 +9,10 @@ import 'package:protobuf/protobuf.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
-import 'common_server_impl.dart' show CommonServerImpl, BadRequest;
+import 'common_server_impl.dart' show BadRequest, CommonServerImpl;
 import 'protos/dart_services.pb.dart' as proto;
 
-export 'common_server_impl.dart' show log, ServerContainer;
+export 'common_server_impl.dart' show log;
 
 part 'common_server_api.g.dart'; // generated with 'pub run build_runner build'
 
@@ -32,7 +30,7 @@ class CommonServerApi {
       _processRequest(request,
           decodeFromJSON: (json) =>
               proto.SourceRequest.create()..mergeFromProto3Json(json),
-          decodeFromProto: (bytes) => proto.SourceRequest.fromBuffer(bytes),
+          decodeFromProto: proto.SourceRequest.fromBuffer,
           transform: _impl.analyze);
 
   @Route.post('$protoApiUrlPrefix/compile')
@@ -40,7 +38,7 @@ class CommonServerApi {
       _processRequest(request,
           decodeFromJSON: (json) =>
               proto.CompileRequest.create()..mergeFromProto3Json(json),
-          decodeFromProto: (bytes) => proto.CompileRequest.fromBuffer(bytes),
+          decodeFromProto: proto.CompileRequest.fromBuffer,
           transform: _impl.compile);
 
   @Route.post('$protoApiUrlPrefix/compileDDC')
@@ -48,7 +46,7 @@ class CommonServerApi {
       _processRequest(request,
           decodeFromJSON: (json) =>
               proto.CompileDDCRequest.create()..mergeFromProto3Json(json),
-          decodeFromProto: (bytes) => proto.CompileDDCRequest.fromBuffer(bytes),
+          decodeFromProto: proto.CompileDDCRequest.fromBuffer,
           transform: _impl.compileDDC);
 
   @Route.post('$protoApiUrlPrefix/complete')
@@ -56,7 +54,7 @@ class CommonServerApi {
       _processRequest(request,
           decodeFromJSON: (json) =>
               proto.SourceRequest.create()..mergeFromProto3Json(json),
-          decodeFromProto: (bytes) => proto.SourceRequest.fromBuffer(bytes),
+          decodeFromProto: proto.SourceRequest.fromBuffer,
           transform: _impl.complete);
 
   @Route.post('$protoApiUrlPrefix/fixes')
@@ -64,7 +62,7 @@ class CommonServerApi {
       _processRequest(request,
           decodeFromJSON: (json) =>
               proto.SourceRequest.create()..mergeFromProto3Json(json),
-          decodeFromProto: (bytes) => proto.SourceRequest.fromBuffer(bytes),
+          decodeFromProto: proto.SourceRequest.fromBuffer,
           transform: _impl.fixes);
 
   @Route.post('$protoApiUrlPrefix/assists')
@@ -72,7 +70,7 @@ class CommonServerApi {
       _processRequest(request,
           decodeFromJSON: (json) =>
               proto.SourceRequest.create()..mergeFromProto3Json(json),
-          decodeFromProto: (bytes) => proto.SourceRequest.fromBuffer(bytes),
+          decodeFromProto: proto.SourceRequest.fromBuffer,
           transform: _impl.assists);
 
   @Route.post('$protoApiUrlPrefix/format')
@@ -80,7 +78,7 @@ class CommonServerApi {
       _processRequest(request,
           decodeFromJSON: (json) =>
               proto.SourceRequest.create()..mergeFromProto3Json(json),
-          decodeFromProto: (bytes) => proto.SourceRequest.fromBuffer(bytes),
+          decodeFromProto: proto.SourceRequest.fromBuffer,
           transform: _impl.format);
 
   @Route.post('$protoApiUrlPrefix/document')
@@ -88,7 +86,7 @@ class CommonServerApi {
       _processRequest(request,
           decodeFromJSON: (json) =>
               proto.SourceRequest.create()..mergeFromProto3Json(json),
-          decodeFromProto: (bytes) => proto.SourceRequest.fromBuffer(bytes),
+          decodeFromProto: proto.SourceRequest.fromBuffer,
           transform: _impl.document);
 
   @Route.post('$protoApiUrlPrefix/version')
@@ -96,7 +94,7 @@ class CommonServerApi {
       _processRequest(request,
           decodeFromJSON: (json) =>
               proto.VersionRequest.create()..mergeFromProto3Json(json),
-          decodeFromProto: (bytes) => proto.VersionRequest.fromBuffer(bytes),
+          decodeFromProto: proto.VersionRequest.fromBuffer,
           transform: _impl.version);
 
   @Route.get('$protoApiUrlPrefix/version')
@@ -104,7 +102,7 @@ class CommonServerApi {
       _processRequest(request,
           decodeFromJSON: (json) =>
               proto.VersionRequest.create()..mergeFromProto3Json(json),
-          decodeFromProto: (bytes) => proto.VersionRequest.fromBuffer(bytes),
+          decodeFromProto: proto.VersionRequest.fromBuffer,
           transform: _impl.version);
 
   // Beginning of multi file map end points:
@@ -113,8 +111,7 @@ class CommonServerApi {
       _processRequest(request,
           decodeFromJSON: (json) =>
               proto.SourceFilesRequest.create()..mergeFromProto3Json(json),
-          decodeFromProto: (bytes) =>
-              proto.SourceFilesRequest.fromBuffer(bytes),
+          decodeFromProto: proto.SourceFilesRequest.fromBuffer,
           transform: _impl.analyzeFiles);
 
   @Route.post('$protoApiUrlPrefix/compileFiles')
@@ -122,8 +119,7 @@ class CommonServerApi {
       _processRequest(request,
           decodeFromJSON: (json) =>
               proto.CompileFilesRequest.create()..mergeFromProto3Json(json),
-          decodeFromProto: (bytes) =>
-              proto.CompileFilesRequest.fromBuffer(bytes),
+          decodeFromProto: proto.CompileFilesRequest.fromBuffer,
           transform: _impl.compileFiles);
 
   @Route.post('$protoApiUrlPrefix/compileFilesDDC')
@@ -131,8 +127,7 @@ class CommonServerApi {
       _processRequest(request,
           decodeFromJSON: (json) =>
               proto.CompileFilesDDCRequest.create()..mergeFromProto3Json(json),
-          decodeFromProto: (bytes) =>
-              proto.CompileFilesDDCRequest.fromBuffer(bytes),
+          decodeFromProto: proto.CompileFilesDDCRequest.fromBuffer,
           transform: _impl.compileFilesDDC);
 
   @Route.post('$protoApiUrlPrefix/completeFiles')
@@ -140,8 +135,7 @@ class CommonServerApi {
       _processRequest(request,
           decodeFromJSON: (json) =>
               proto.SourceFilesRequest.create()..mergeFromProto3Json(json),
-          decodeFromProto: (bytes) =>
-              proto.SourceFilesRequest.fromBuffer(bytes),
+          decodeFromProto: proto.SourceFilesRequest.fromBuffer,
           transform: _impl.completeFiles);
 
   @Route.post('$protoApiUrlPrefix/fixesFiles')
@@ -149,8 +143,7 @@ class CommonServerApi {
       _processRequest(request,
           decodeFromJSON: (json) =>
               proto.SourceFilesRequest.create()..mergeFromProto3Json(json),
-          decodeFromProto: (bytes) =>
-              proto.SourceFilesRequest.fromBuffer(bytes),
+          decodeFromProto: proto.SourceFilesRequest.fromBuffer,
           transform: _impl.fixesFiles);
 
   @Route.post('$protoApiUrlPrefix/assistsFiles')
@@ -158,8 +151,7 @@ class CommonServerApi {
       _processRequest(request,
           decodeFromJSON: (json) =>
               proto.SourceFilesRequest.create()..mergeFromProto3Json(json),
-          decodeFromProto: (bytes) =>
-              proto.SourceFilesRequest.fromBuffer(bytes),
+          decodeFromProto: proto.SourceFilesRequest.fromBuffer,
           transform: _impl.assistsFiles);
 
   @Route.post('$protoApiUrlPrefix/documentFiles')
@@ -167,8 +159,7 @@ class CommonServerApi {
       _processRequest(request,
           decodeFromJSON: (json) =>
               proto.SourceFilesRequest.create()..mergeFromProto3Json(json),
-          decodeFromProto: (bytes) =>
-              proto.SourceFilesRequest.fromBuffer(bytes),
+          decodeFromProto: proto.SourceFilesRequest.fromBuffer,
           transform: _impl.documentFiles);
   // End of Multi file files={} file map end points.
 

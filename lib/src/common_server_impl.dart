@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library services.common_server_impl;
-
 import 'dart:async';
 import 'dart:convert';
 
@@ -11,7 +9,6 @@ import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 import 'package:logging/logging.dart';
 
-import '../version.dart';
 import 'analysis_servers.dart';
 import 'common.dart';
 import 'compiler.dart';
@@ -30,12 +27,7 @@ class BadRequest implements Exception {
   BadRequest(this.cause);
 }
 
-abstract class ServerContainer {
-  String get version;
-}
-
 class CommonServerImpl {
-  final ServerContainer _container;
   final ServerCache _cache;
   final Sdk _sdk;
 
@@ -47,7 +39,6 @@ class CommonServerImpl {
   bool get isHealthy => _analysisServers.isHealthy;
 
   CommonServerImpl(
-    this._container,
     this._cache,
     this._sdk,
   ) {
@@ -256,7 +247,7 @@ class CommonServerImpl {
   Future<proto.VersionResponse> version(proto.VersionRequest _) {
     final packageVersions = getPackageVersions();
     final packageInfos = [
-      for (var packageName in packageVersions.keys)
+      for (final packageName in packageVersions.keys)
         proto.PackageInfo()
           ..name = packageName
           ..version = packageVersions[packageName]!
@@ -268,13 +259,13 @@ class CommonServerImpl {
         ..sdkVersion = _sdk.version
         ..sdkVersionFull = _sdk.versionFull
         ..runtimeVersion = vmVersion
-        ..servicesVersion = servicesVersion
-        ..appEngineVersion = _container.version
         ..flutterDartVersion = _sdk.version
         ..flutterDartVersionFull = _sdk.versionFull
         ..flutterVersion = _sdk.flutterVersion
+        ..flutterEngineSha = _sdk.engineVersion
         ..packageVersions.addAll(packageVersions)
-        ..packageInfo.addAll(packageInfos),
+        ..packageInfo.addAll(packageInfos)
+        ..experiment.addAll(_sdk.experiments),
     );
   }
 
@@ -401,9 +392,8 @@ String _hashSources(Map<String, String> sources) {
     return sha1.convert(sources.values.first.codeUnits).toString();
   } else {
     // Use chunk hashing method for >1 source files.
-    final AccumulatorSink<Digest> hashoutput = AccumulatorSink<Digest>();
-    final ByteConversionSink sha1Chunker =
-        sha1.startChunkedConversion(hashoutput);
+    final hashoutput = AccumulatorSink<Digest>();
+    final sha1Chunker = sha1.startChunkedConversion(hashoutput);
     sources.forEach((_, filecontents) {
       sha1Chunker.add(filecontents.codeUnits);
     });

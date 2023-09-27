@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// A server for Cloud Run.
-library services_cloud_run;
+library;
 
 import 'dart:async';
 import 'dart:io';
@@ -92,7 +92,6 @@ class EndpointsServer {
 
   EndpointsServer._(String? redisServerUri, Sdk sdk) {
     _commonServerImpl = CommonServerImpl(
-      _ServerContainer(),
       redisServerUri == null
           ? InMemoryCache()
           : RedisCache(
@@ -122,7 +121,7 @@ class EndpointsServer {
         .addMiddleware(logRequests())
         .addMiddleware(_createCustomCorsHeadersMiddleware());
 
-    handler = pipeline.addHandler(commonServerApi.router);
+    handler = pipeline.addHandler(commonServerApi.router.call);
   }
 
   Future<void> init() => _commonServerImpl.init();
@@ -135,9 +134,4 @@ class EndpointsServer {
           'Origin, X-Requested-With, Content-Type, Accept, x-goog-api-client'
     });
   }
-}
-
-class _ServerContainer implements ServerContainer {
-  @override
-  String get version => '1.0';
 }

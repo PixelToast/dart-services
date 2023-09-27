@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// A dev-time only server.
-library services_dev;
+library;
 
 import 'dart:async';
 import 'dart:io';
@@ -65,7 +65,6 @@ class EndpointsServer {
 
   EndpointsServer._(Sdk sdk, bool nullSafety) {
     final commonServerImpl = CommonServerImpl(
-      _ServerContainer(),
       _Cache(),
       sdk,
     );
@@ -80,7 +79,7 @@ class EndpointsServer {
         .addMiddleware(logRequests())
         .addMiddleware(_createCustomCorsHeadersMiddleware());
 
-    handler = pipeline.addHandler(commonServerApi.router);
+    handler = pipeline.addHandler(commonServerApi.router.call);
   }
 
   Middleware _createCustomCorsHeadersMiddleware() {
@@ -91,11 +90,6 @@ class EndpointsServer {
           'Origin, X-Requested-With, Content-Type, Accept, x-goog-api-client'
     });
   }
-}
-
-class _ServerContainer implements ServerContainer {
-  @override
-  String get version => '1.0';
 }
 
 class _Cache implements ServerCache {

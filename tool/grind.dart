@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library services.grind;
+// ignore_for_file: unreachable_from_main
 
 import 'dart:async';
 import 'dart:convert' show JsonEncoder;
@@ -160,17 +160,11 @@ void buildProjectTemplates() async {
     dependenciesFile: _pubDependenciesFile(channel: _channel),
     log: log,
   );
-  await projectCreator.buildDartProjectTemplate(oldChannel: sdk.oldChannel);
+  await projectCreator.buildDartProjectTemplate();
   await projectCreator.buildFlutterProjectTemplate(
-    firebaseStyle: FirebaseStyle.none,
-    devMode: sdk.devMode,
-    oldChannel: sdk.oldChannel,
-  );
+      firebaseStyle: FirebaseStyle.none);
   await projectCreator.buildFlutterProjectTemplate(
-    firebaseStyle: FirebaseStyle.flutterFire,
-    devMode: sdk.devMode,
-    oldChannel: sdk.oldChannel,
-  );
+      firebaseStyle: FirebaseStyle.flutterFire);
 }
 
 @Task('build the sdk compilation artifacts for upload to google storage')
@@ -243,7 +237,8 @@ Future<String> _buildStorageArtifacts(Directory dir, Sdk sdk,
     }
   }
 
-  // Make sure flutter-sdk/bin/cache/flutter_web_sdk/flutter_web_sdk/kernel/flutter_ddc_sdk.dill
+  // Make sure
+  // flutter-sdks/<channel>/bin/cache/flutter_web_sdk/kernel/flutter_ddc_sdk.dill
   // is installed.
   await _run(
     sdk.flutterToolPath,
@@ -293,8 +288,8 @@ Future<String> _buildStorageArtifacts(Directory dir, Sdk sdk,
 
   // Emit some good Google Storage upload instructions.
   final version = sdk.versionFull;
-  return ('  gsutil -h "Cache-Control: public, max-age=604800, immutable" cp -z js ${artifactsDir.path}/*.js*'
-      ' gs://nnbd_artifacts/$version/');
+  return '  gsutil -h "Cache-Control: public, max-age=604800, immutable" cp -z js ${artifactsDir.path}/*.js*'
+      ' gs://nnbd_artifacts/$version/';
 }
 
 @Task('Reinitialize the Flutter submodule.')
@@ -416,19 +411,28 @@ Future<void> _updateDependenciesFile({
   required Sdk sdk,
 }) async {
   final tempDir = Directory.systemTemp.createTempSync('pubspec-scratch');
+
+  final dependencies = <String, String>{
+    'lints': 'any',
+    'flutter_lints': 'any',
+    for (final package in firebasePackages) package: 'any',
+    for (final package in supportedFlutterPackages(devMode: sdk.devMode))
+      package: 'any',
+    for (final package in supportedBasicDartPackages(devMode: sdk.devMode))
+      package: 'any',
+  };
+
+  // Overwrite with important constraints.
+  for (final entry in overrideVersionConstraints().entries) {
+    if (dependencies.containsKey(entry.key)) {
+      dependencies[entry.key] = entry.value;
+    }
+  }
+
   final pubspec = createPubspec(
     includeFlutterWeb: true,
     dartLanguageVersion: readDartLanguageVersion(_channel),
-    dependencies: {
-      'lints': 'any',
-      'flutter_lints': 'any',
-      for (var package in firebasePackages) package: 'any',
-      for (var package in supportedFlutterPackages(devMode: sdk.devMode))
-        package: 'any',
-      for (var package in supportedBasicDartPackages) package: 'any',
-      // Overwrite with important constraints:
-      ...packageVersionConstraints(oldChannel: sdk.oldChannel),
-    },
+    dependencies: dependencies,
   );
   joinFile(tempDir, ['pubspec.yaml']).writeAsStringSync(pubspec);
   await runFlutterPackagesGet(flutterToolPath, tempDir.path, log: log);
